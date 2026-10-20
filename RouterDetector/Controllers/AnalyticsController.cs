@@ -30,9 +30,27 @@ namespace RouterDetector.Controllers
             try
             {
                 var last24Hours = DateTime.Now.AddHours(-24);
-                var recentEvents = await _context.EventLogs
-                    .Where(e => e.Timestamp >= last24Hours)
-                    .ToListAsync();
+                var query = _context.EventLogs.AsNoTracking().Where(e => e.Timestamp >= last24Hours);
+
+                // Get user's Sacco information for filtering
+                var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+                var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+                int? userSaccoId = null;
+                if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                    userSaccoId = parsedSaccoId;
+                bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
+
+                // Filter by Sacco for non-admin users
+                if (!isAdmin && userSaccoId.HasValue)
+                {
+                    var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                    if (userSacco != null)
+                    {
+                        query = query.Where(e => e.Institution == userSacco.InstitutionName);
+                    }
+                }
+
+                var recentEvents = await query.ToListAsync();
 
                 var realTimeData = new
                 {
@@ -63,11 +81,29 @@ namespace RouterDetector.Controllers
         {
             try
             {
-                var query = _context.EventLogs.AsQueryable();
-                
+                var query = _context.EventLogs.AsNoTracking().AsQueryable();
+
+                // Get user's Sacco information for filtering
+                var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+                var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+                int? userSaccoId = null;
+                if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                    userSaccoId = parsedSaccoId;
+                bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
+
+                // Filter by Sacco for non-admin users
+                if (!isAdmin && userSaccoId.HasValue)
+                {
+                    var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                    if (userSacco != null)
+                    {
+                        query = query.Where(e => e.Institution == userSacco.InstitutionName);
+                    }
+                }
+
                 if (startDate.HasValue)
                     query = query.Where(e => e.Timestamp >= startDate.Value);
-                
+
                 if (endDate.HasValue)
                     query = query.Where(e => e.Timestamp <= endDate.Value);
 
@@ -101,8 +137,27 @@ namespace RouterDetector.Controllers
         {
             try
             {
-                var topThreats = await _context.EventLogs
-                    .Where(e => e.Severity == "High" || e.Severity == "Critical")
+                var query = _context.EventLogs.AsNoTracking().Where(e => e.Severity == "High" || e.Severity == "Critical");
+
+                // Get user's Sacco information for filtering
+                var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+                var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+                int? userSaccoId = null;
+                if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                    userSaccoId = parsedSaccoId;
+                bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
+
+                // Filter by Sacco for non-admin users
+                if (!isAdmin && userSaccoId.HasValue)
+                {
+                    var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                    if (userSacco != null)
+                    {
+                        query = query.Where(e => e.Institution == userSacco.InstitutionName);
+                    }
+                }
+
+                var topThreats = await query
                     .GroupBy(e => new { e.EventType, e.SrcIp, e.Severity })
                     .OrderByDescending(g => g.Count())
                     .Take(limit)
@@ -130,8 +185,27 @@ namespace RouterDetector.Controllers
         {
             try
             {
-                var sourceIPs = await _context.EventLogs
-                    .Where(e => !string.IsNullOrEmpty(e.SrcIp))
+                var query = _context.EventLogs.AsNoTracking().Where(e => !string.IsNullOrEmpty(e.SrcIp));
+
+                // Get user's Sacco information for filtering
+                var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+                var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+                int? userSaccoId = null;
+                if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                    userSaccoId = parsedSaccoId;
+                bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
+
+                // Filter by Sacco for non-admin users
+                if (!isAdmin && userSaccoId.HasValue)
+                {
+                    var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                    if (userSacco != null)
+                    {
+                        query = query.Where(e => e.Institution == userSacco.InstitutionName);
+                    }
+                }
+
+                var sourceIPs = await query
                     .GroupBy(e => e.SrcIp)
                     .OrderByDescending(g => g.Count())
                     .Take(20)
@@ -158,11 +232,29 @@ namespace RouterDetector.Controllers
         {
             try
             {
-                var query = _context.EventLogs.AsQueryable();
-                
+                var query = _context.EventLogs.AsNoTracking().AsQueryable();
+
+                // Get user's Sacco information for filtering
+                var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+                var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+                int? userSaccoId = null;
+                if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                    userSaccoId = parsedSaccoId;
+                bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
+
+                // Filter by Sacco for non-admin users
+                if (!isAdmin && userSaccoId.HasValue)
+                {
+                    var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                    if (userSacco != null)
+                    {
+                        query = query.Where(e => e.Institution == userSacco.InstitutionName);
+                    }
+                }
+
                 if (startDate.HasValue)
                     query = query.Where(e => e.Timestamp >= startDate.Value);
-                
+
                 if (endDate.HasValue)
                     query = query.Where(e => e.Timestamp <= endDate.Value);
 
@@ -221,9 +313,27 @@ namespace RouterDetector.Controllers
             try
             {
                 var last30Days = DateTime.Now.AddDays(-30);
-                var events = await _context.EventLogs
-                    .Where(e => e.Timestamp >= last30Days)
-                    .ToListAsync();
+                var query = _context.EventLogs.AsNoTracking().Where(e => e.Timestamp >= last30Days);
+
+                // Get user's Sacco information for filtering
+                var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+                var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+                int? userSaccoId = null;
+                if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                    userSaccoId = parsedSaccoId;
+                bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
+
+                // Filter by Sacco for non-admin users
+                if (!isAdmin && userSaccoId.HasValue)
+                {
+                    var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                    if (userSacco != null)
+                    {
+                        query = query.Where(e => e.Institution == userSacco.InstitutionName);
+                    }
+                }
+
+                var events = await query.ToListAsync();
 
                 var metrics = new
                 {

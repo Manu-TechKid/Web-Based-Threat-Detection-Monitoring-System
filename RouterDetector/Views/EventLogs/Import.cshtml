@@ -1,0 +1,56 @@
+@{
+    ViewData["Title"] = "Import Event Logs";
+}
+<div class="container mt-4">
+    <h1>Import Event Logs</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="Import" method="post" enctype="multipart/form-data" id="importForm">
+                <div class="mb-3">
+                    <label for="file" class="form-label">Select Excel file to import</label>
+                    <input type="file" name="file" id="file" class="form-control" accept=".xlsx,.xls" required />
+                    <small class="form-text text-muted">Please ensure your Excel file has the correct column headers and format</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" id="importBtn">
+                        <i class="fas fa-upload me-2"></i>Import
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-4">
+                    <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 class="modal-title" id="loadingModalLabel">Importing Event Logs</h5>
+                    <p class="text-muted mb-0">Please wait while we process your Excel file...</p>
+                    <div class="progress mt-3" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('importForm').addEventListener('submit', function(e) {
+        // Show loading modal
+        var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+        loadingModal.show();
+        
+        // Disable the import button
+        document.getElementById('importBtn').disabled = true;
+        document.getElementById('importBtn').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Importing...';
+    });
+</script> 

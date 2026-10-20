@@ -61,7 +61,8 @@ namespace RouterDetector.CaptureConsole.Services
                 config = new SystemConfiguration
                 {
                     InstitutionName = "Default Institution",
-                    StaffPosition = "Default Position"
+                    StaffPosition = "Default Position",
+                    County = "Default County"
                 };
                 await CreateAsync(config);
             }

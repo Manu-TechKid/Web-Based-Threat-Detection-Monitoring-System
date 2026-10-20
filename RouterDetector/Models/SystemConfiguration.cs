@@ -9,5 +9,6 @@ namespace RouterDetector.Models
         public int Id { get; set; }
         public required string InstitutionName { get; set; }
         public required string StaffPosition { get; set; }
+        public required string County { get; set; }
     }
 }

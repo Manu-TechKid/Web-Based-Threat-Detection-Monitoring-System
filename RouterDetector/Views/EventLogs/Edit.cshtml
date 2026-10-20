@@ -1,0 +1,70 @@
+@model RouterDetector.Models.EventLog
+@{
+    ViewData["Title"] = "Edit Event Log";
+    var severities = ViewBag.Severities as List<string>;
+    var messages = ViewBag.Messages as List<string>;
+    var ruleTypes = ViewBag.RuleTypes as List<string>;
+    var eventTypes = ViewBag.EventTypes as List<string>;
+}
+
+<h1>Edit Event Log</h1>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label class="form-label">Notes</label>
+        <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Severity</label>
+        <select asp-for="Severity" class="form-select">
+            <option value="">-- Select Severity --</option>
+            @foreach (var s in ViewBag.Severities as List<string>)
+            {
+                <option value="@s" selected="@(Model.Severity == s)">@s</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Message</label>
+        <select asp-for="Message" class="form-select">
+            <option value="">-- Select Message --</option>
+            @foreach (var m in ViewBag.Messages as List<string>)
+            {
+                <option value="@m" selected="@(Model.Message == m)">@m</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Rule Type</label>
+        <select asp-for="RuleType" class="form-select">
+            <option value="">-- Select Rule Type --</option>
+            @foreach (var r in ViewBag.RuleTypes as List<string>)
+            {
+                <option value="@r" selected="@(Model.RuleType == r)">@r</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Event Type</label>
+        <select asp-for="EventType" class="form-select">
+            <option value="">-- Select Event Type --</option>
+            @foreach (var e in ViewBag.EventTypes as List<string>)
+            {
+                <option value="@e" selected="@(Model.EventType == e)">@e</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Action Taken</label>
+        <select asp-for="ActionTaken" class="form-select">
+            <option value="">-- Select Action Taken --</option>
+            @foreach (var a in ViewBag.ActionTakens as List<string>)
+            {
+                <option value="@a" selected="@(Model.ActionTaken == a)">@a</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Cancel</a>
+</form> 

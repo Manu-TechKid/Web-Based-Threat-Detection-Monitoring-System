@@ -3,25 +3,66 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RouterDetector</title>
+    <title>@ViewData["Title"] - Web-Based Threat Detection and Monitoring System</title>
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-k5bIbRYnTtd23Aw7v1uTX1Vm+5syo9HRa1Lcz/ZWfbn0r8bQ2/FkpdpW1Bb6X7gUQ4mDGVAY9FZ/f+Nuk8UVtA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RouterDetector.styles.css" asp-append-version="true" />
+    <style>
+        .footer-half-orange {
+            background: linear-gradient(to right, #F6891F 0%, #F6891F 50%, #234C39 50%, #234C39 100%);
+        }
+        .footer-half-orange .footer-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+        .header-half-orange {
+            background: linear-gradient(to right, #F6891F 0%, #F6891F 50%, #234C39 50%, #234C39 100%) !important;
+        }
+        .header-half-orange .navbar-nav .nav-link, .header-half-orange .navbar-brand {
+            color: #fff !important;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .navbar-nav .bi {
+            font-size: 1.3em;
+            vertical-align: -0.15em;
+        }
+        .logout-btn-contrast {
+            color: #fff !important;
+            background: transparent !important;
+            border: 2px solid #fff !important;
+            font-weight: bold;
+            padding: 0.375rem 1.25rem !important;
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            transition: background 0.2s, color 0.2s;
+        }
+        .logout-btn-contrast:hover, .logout-btn-contrast:focus {
+            background: #fff !important;
+            color: #234C39 !important;
+            border-color: #fff !important;
+        }
+    </style>
 </head>
 <body>
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
     <header>
-        <nav class="navbar navbar-expand-sm navbar-light bg-white shadow-sm border-bottom">
+        <nav class="navbar navbar-expand-sm navbar-light shadow-sm border-bottom header-half-orange">
             <div class="container-fluid">
                 <!-- Removed brand text -->
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -31,30 +72,57 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">
-                                <i class="fa fa-home me-1"></i>Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Dashboard">
-                                <i class="fa fa-chart-bar me-1"></i>Dashboard
+                                <i class="bi bi-speedometer2 me-1" style="color:#2196f3;"></i>Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="EventLogs" asp-action="Index">
-                                <i class="fa-solid fa-network-wired me-1"></i>Event Logs
+                                <i class="bi bi-list-ul me-1" style="color:#ff9800;"></i>Event Logs
                             </a>
                         </li>
-                    </ul>
-                    <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-outline-danger ms-2">
-                                    <i class="fa fa-sign-out-alt"></i> Logout
-                                </button>
-                            </form>
+                            <a class="nav-link text-dark" asp-controller="AnalysisFilter" asp-action="Index">
+                                <i class="bi bi-bar-chart me-1" style="color:#4caf50;"></i>Analysis
+                            </a>
                         </li>
+                        @if (User.HasClaim("StaffPosition", "Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Setups" asp-action="Index">
+                                    <i class="bi bi-sliders me-1" style="color:#9c27b0;"></i>SETUPS
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="UserManagement" asp-action="Index" style="font-size: 0.9rem;">
+                                    <i class="bi bi-people me-1" style="color:#f44336;"></i>User Management
+                                </a>
+                            </li>
+                        }
                     </ul>
+                        <ul class="navbar-nav ms-auto">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-2" style="color:#fff; font-size: 1.2em;"></i>
+                                    <span style="color:#fff; font-weight: bold;">@User.Identity.Name</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">
+                                            <i class="fas fa-key me-2" style="color:#ffc107;"></i>Change Password
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
                 </div>
             </div>
         </nav>
@@ -67,12 +135,9 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-4 py-3 bg-light">
+    <footer class="border-top footer text-muted mt-4 py-3 footer-half-orange">
         <div class="container text-center">
-            &copy; 2025 - RouterDetector |
-            <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none">
-                <i class="fa fa-shield-alt"></i> Privacy
-            </a>
+            <span class="footer-text">&copy; 2025 - CTI</span>
         </div>
     </footer>
 

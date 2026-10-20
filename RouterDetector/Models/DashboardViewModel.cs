@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using RouterDetector.Models;
 
 namespace RouterDetector.Models
 {
@@ -10,7 +11,7 @@ namespace RouterDetector.Models
         public int TotalBlocked { get; set; }
         public int TotalQuarantined { get; set; }
 
-        // Threat Analytics
+        // Analytics
         public List<EventLog> RecentEvents { get; set; } = new();
         public Dictionary<string, int> EventsByType { get; set; } = new();
         public Dictionary<string, int> EventsBySeverity { get; set; } = new();
@@ -23,34 +24,25 @@ namespace RouterDetector.Models
         public Dictionary<string, int> EventsByDay { get; set; } = new();
         public Dictionary<string, int> EventsByHour { get; set; } = new();
 
-        // Attack Type Analytics
+        // Attack Analytics
         public Dictionary<string, int> AttackTypeCounts { get; set; } = new();
-        public Dictionary<string, int> AttackTypeByMonth { get; set; } = new();
-        public Dictionary<string, int> AttackTypeBySeverity { get; set; } = new();
-
-        // Source/Destination Analytics
         public Dictionary<string, int> TopSourceIPs { get; set; } = new();
         public Dictionary<string, int> TopDestinationIPs { get; set; } = new();
         public Dictionary<string, int> TopPorts { get; set; } = new();
 
-        // Specific Threat Lists
-        public List<EventLog> MalwareDetections { get; set; } = new();
-        public List<EventLog> PhishingDetections { get; set; } = new();
-        public List<EventLog> SuspiciousEmailDetections { get; set; } = new();
-        public List<EventLog> BruteForceDetections { get; set; } = new();
-        public List<EventLog> DdosDetections { get; set; } = new();
-        public List<EventLog> SystemAttackDetections { get; set; } = new();
-        public List<EventLog> MobileAppAttackDetections { get; set; } = new();
-        public List<EventLog> WebAppAttackDetections { get; set; } = new();
-        public List<EventLog> PortScanDetections { get; set; } = new();
+        // Specific Threat Lists (for cards)
         public List<EventLog> MalwareEvents { get; set; } = new();
         public List<EventLog> PhishingEvents { get; set; } = new();
         public List<EventLog> SuspiciousEmailEvents { get; set; } = new();
+        public List<EventLog> BruteForceDetections { get; set; } = new();
+        public List<EventLog> DdosDetections { get; set; } = new();
+        public List<EventLog> PortScanDetections { get; set; } = new();
+        public List<EventLog> WebAppAttackDetections { get; set; } = new();
 
-        // Trend Analysis
+        // Trends
         public List<MonthlyTrend> MonthlyTrends { get; set; } = new();
-        public List<AttackTrend> AttackTrends { get; set; } = new();
-        public List<SeverityTrend> SeverityTrends { get; set; } = new();
+        public Dictionary<string, List<int>> EventsByTypePerMonth { get; set; } = new();
+        public List<string> Months { get; set; } = new();
 
         // Filter Options
         public DateTime? StartDate { get; set; }
@@ -59,6 +51,8 @@ namespace RouterDetector.Models
         public string? SelectedSeverity { get; set; }
         public string? SelectedRuleType { get; set; }
         public string? SelectedActionTaken { get; set; }
+        public int? SelectedSaccoId { get; set; }
+        public List<SystemConfiguration> Saccos { get; set; } = new();
     }
 
     public class MonthlyTrend

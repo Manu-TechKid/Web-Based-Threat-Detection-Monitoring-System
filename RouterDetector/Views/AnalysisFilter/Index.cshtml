@@ -1,0 +1,192 @@
+@model RouterDetector.Controllers.AnalysisFilterViewModel
+@{
+    ViewData["Title"] = "Analysis - Analytics Filters";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Analytics Field Filters (Analysis)</h2>
+
+    <!-- Threat Profiles Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-2">
+                <div class="card-body">
+                    <h5 class="card-title">Threat Types</h5>
+                    <ul class="mb-0">
+                        @foreach (var type in Model.EventTypes)
+                        {
+                            <li>@type: <span class="badge bg-light text-dark">@Model.FilteredLogs.Count(x => x.EventType == type)</span></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white mb-2">
+                <div class="card-body">
+                    <h5 class="card-title">Severity Counts</h5>
+                    <ul class="mb-0">
+                        @foreach (var sev in Model.Severities)
+                        {
+                            <li>@sev: <span class="badge bg-light text-dark">@Model.FilteredLogs.Count(x => x.Severity == sev)</span></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-light mb-2">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Threats</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var log in Model.FilteredLogs.OrderByDescending(x => x.Timestamp).Take(5))
+                        {
+                            <span class="badge bg-info text-dark">@log.EventType</span>
+                            <span class="badge bg-secondary">@log.RuleType</span>
+                            <span class="badge bg-warning text-dark">@log.ActionTaken</span>
+                            <span class="badge bg-danger">@log.Severity</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <form method="get" class="row g-3 mb-4 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Rule Type</label>
+            <select name="ruleType" class="form-select">
+                <option value="">All</option>
+                @foreach (var val in Model.RuleTypes)
+                {
+                    if (Model.SelectedRuleType == val)
+                    {
+                        <option value="@val" selected>@val</option>
+                    }
+                    else
+                    {
+                        <option value="@val">@val</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Message</label>
+            <select name="message" class="form-select">
+                <option value="">All</option>
+                @foreach (var val in Model.Messages)
+                {
+                    if (Model.SelectedMessage == val)
+                    {
+                        <option value="@val" selected>@val</option>
+                    }
+                    else
+                    {
+                        <option value="@val">@val</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Event Type</label>
+            <select name="eventType" class="form-select">
+                <option value="">All</option>
+                @foreach (var val in Model.EventTypes)
+                {
+                    if (Model.SelectedEventType == val)
+                    {
+                        <option value="@val" selected>@val</option>
+                    }
+                    else
+                    {
+                        <option value="@val">@val</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Action Taken</label>
+            <select name="actionTaken" class="form-select">
+                <option value="">All</option>
+                @foreach (var val in Model.ActionTakens)
+                {
+                    if (Model.SelectedActionTaken == val)
+                    {
+                        <option value="@val" selected>@val</option>
+                    }
+                    else
+                    {
+                        <option value="@val">@val</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Severity</label>
+            <select name="severity" class="form-select">
+                <option value="">All</option>
+                @foreach (var val in Model.Severities)
+                {
+                    if (Model.SelectedSeverity == val)
+                    {
+                        <option value="@val" selected>@val</option>
+                    }
+                    else
+                    {
+                        <option value="@val">@val</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Search</label>
+            <input type="text" name="search" class="form-control" placeholder="Search logs..." value="@(ViewContext.HttpContext.Request.Query["search"])" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100 mb-2">Apply Filters</button>
+            <a href="@Url.Action("Index", "AnalysisFilter")" class="btn btn-outline-secondary w-100">Clear</a>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Filtered Event Logs</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event Type</th>
+                            <th>Rule Type</th>
+                            <th>Source IP</th>
+                            <th>Severity</th>
+                            <th>Action Taken</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.FilteredLogs.Take(100))
+                        {
+                            <tr>
+                                <td>@item.Timestamp.ToString("g")</td>
+                                <td>@item.EventType</td>
+                                <td>@item.RuleType</td>
+                                <td>@item.SrcIp</td>
+                                <td>@item.Severity</td>
+                                <td>@item.ActionTaken</td>
+                                <td>@item.Message</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                @if (Model.FilteredLogs.Count > 100)
+                {
+                    <div class="alert alert-info m-3">Showing first 100 results. Please refine your filters for more specific results.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div> 

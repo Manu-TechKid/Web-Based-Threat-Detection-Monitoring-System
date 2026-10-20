@@ -15,12 +15,26 @@
     }
 }
 
+@if (TempData["ImportSuccess"] != null)
+{
+    <div class="alert alert-success">@TempData["ImportSuccess"]</div>
+}
+@if (TempData["ImportError"] != null)
+{
+    <div class="alert alert-danger">@TempData["ImportError"]</div>
+}
+
 <h1>Event Logs</h1>
 
 <!-- Export Buttons -->
 <div class="mb-3">
     <a class="btn btn-success me-2" href="@Url.Action("ExportToExcel", new { filterIpAddress = Model.FilterIpAddress, filterProtocol = Model.FilterProtocol, filterStartDate = Model.FilterStartDate, filterEndDate = Model.FilterEndDate })">Export to Excel</a>
     <a class="btn btn-danger" href="@Url.Action("ExportToPdf", new { filterIpAddress = Model.FilterIpAddress, filterProtocol = Model.FilterProtocol, filterStartDate = Model.FilterStartDate, filterEndDate = Model.FilterEndDate })">Export to PDF</a>
+</div>
+
+<div class="mb-3">
+    <a class="btn btn-primary me-2" href="@Url.Action("Create")">Create New Event Log</a>
+    <a class="btn btn-secondary" href="@Url.Action("Import")">Import Logs</a>
 </div>
 
 <!-- Filter Form -->

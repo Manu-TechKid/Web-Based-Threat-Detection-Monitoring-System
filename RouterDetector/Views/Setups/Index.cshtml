@@ -1,0 +1,265 @@
+@model RouterDetector.Controllers.SetupsDropdownsViewModel
+@{
+    ViewData["Title"] = "SETUPS - Manage Dropdown Fields";
+}
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Dropdown Fields for Analytics Filters</h2>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    <style>
+        .dropdown-list-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+        .dropdown-list-label {
+            flex: 1;
+            min-width: 0;
+            word-break: break-all;
+        }
+        .dropdown-list-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+        .dropdown-list-actions form {
+            margin-bottom: 0;
+        }
+    </style>
+    <script>
+        function enableEdit(section, id) {
+            document.getElementById(section + '-display-' + id).style.display = 'none';
+            document.getElementById(section + '-edit-' + id).style.display = 'flex';
+        }
+        function cancelEdit(section, id) {
+            document.getElementById(section + '-edit-' + id).style.display = 'none';
+            document.getElementById(section + '-display-' + id).style.display = 'flex';
+        }
+    </script>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">Event Types</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @foreach (var item in Model.EventTypes) {
+                            <li class="dropdown-list-item">
+                                <span id="eventType-display-@item.Id" class="dropdown-list-item" style="flex:1;">
+                                    <span class="dropdown-list-label">@item.Name</span>
+                                    <span class="dropdown-list-actions">
+                                        <button type="button" class="btn btn-sm btn-success" onclick="enableEdit('eventType', '@item.Id')">Edit</button>
+                                        <form method="post" asp-action="DeleteEventType" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </span>
+                                </span>
+                                <span id="eventType-edit-@item.Id" class="dropdown-list-item" style="display:none; flex:1;">
+                                    <form method="post" asp-action="EditEventType" class="d-inline dropdown-list-actions" style="flex:1;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="text" name="newEventType" value="@item.Name" class="form-control d-inline w-auto me-2" style="width:150px; display:inline-block;" />
+                                        <button type="submit" class="btn btn-sm btn-primary me-1">Save</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('eventType', '@item.Id')">Cancel</button>
+                                    </form>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                    <form method="post" asp-action="AddEventType" class="mt-2">
+                        <div class="input-group">
+                            <input type="text" name="newEventType" class="form-control" placeholder="Add new Event Type" />
+                            <button type="submit" class="btn btn-primary">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header bg-secondary text-white">Rule Types</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @foreach (var item in Model.RuleTypes) {
+                            <li class="dropdown-list-item">
+                                <span id="ruleType-display-@item.Id" class="dropdown-list-item" style="flex:1;">
+                                    <span class="dropdown-list-label">@item.Name</span>
+                                    <span class="dropdown-list-actions">
+                                        <button type="button" class="btn btn-sm btn-success" onclick="enableEdit('ruleType', '@item.Id')">Edit</button>
+                                        <form method="post" asp-action="DeleteRuleType" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </span>
+                                </span>
+                                <span id="ruleType-edit-@item.Id" class="dropdown-list-item" style="display:none; flex:1;">
+                                    <form method="post" asp-action="EditRuleType" class="d-inline dropdown-list-actions" style="flex:1;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="text" name="newRuleType" value="@item.Name" class="form-control d-inline w-auto me-2" style="width:150px; display:inline-block;" />
+                                        <button type="submit" class="btn btn-sm btn-primary me-1">Save</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('ruleType', '@item.Id')">Cancel</button>
+                                    </form>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                    <form method="post" asp-action="AddRuleType" class="mt-2">
+                        <div class="input-group">
+                            <input type="text" name="newRuleType" class="form-control" placeholder="Add new Rule Type" />
+                            <button type="submit" class="btn btn-secondary">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header bg-danger text-white">Severities</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @foreach (var item in Model.Severities) {
+                            <li class="dropdown-list-item">
+                                <span id="severity-display-@item.Id" class="dropdown-list-item" style="flex:1;">
+                                    <span class="dropdown-list-label">@item.Name</span>
+                                    <span class="dropdown-list-actions">
+                                        <button type="button" class="btn btn-sm btn-success" onclick="enableEdit('severity', '@item.Id')">Edit</button>
+                                        <form method="post" asp-action="DeleteSeverity" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </span>
+                                </span>
+                                <span id="severity-edit-@item.Id" class="dropdown-list-item" style="display:none; flex:1;">
+                                    <form method="post" asp-action="EditSeverity" class="d-inline dropdown-list-actions" style="flex:1;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="text" name="newSeverity" value="@item.Name" class="form-control d-inline w-auto me-2" style="width:150px; display:inline-block;" />
+                                        <button type="submit" class="btn btn-sm btn-primary me-1">Save</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('severity', '@item.Id')">Cancel</button>
+                                    </form>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                    <form method="post" asp-action="AddSeverity" class="mt-2">
+                        <div class="input-group">
+                            <input type="text" name="newSeverity" class="form-control" placeholder="Add new Severity" />
+                            <button type="submit" class="btn btn-danger">Add</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">Action Takens</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @foreach (var item in Model.ActionTakens) {
+                            <li class="dropdown-list-item">
+                                <span id="actionTaken-display-@item.Id" class="dropdown-list-item" style="flex:1;">
+                                    <span class="dropdown-list-label">@item.Name</span>
+                                    <span class="dropdown-list-actions">
+                                        <button type="button" class="btn btn-sm btn-success" onclick="enableEdit('actionTaken', '@item.Id')">Edit</button>
+                                        <form method="post" asp-action="DeleteActionTaken" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </span>
+                                </span>
+                                <span id="actionTaken-edit-@item.Id" class="dropdown-list-item" style="display:none; flex:1;">
+                                    <form method="post" asp-action="EditActionTaken" class="d-inline dropdown-list-actions" style="flex:1;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="text" name="newActionTaken" value="@item.Name" class="form-control d-inline w-auto me-2" style="width:150px; display:inline-block;" />
+                                        <button type="submit" class="btn btn-sm btn-primary me-1">Save</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('actionTaken', '@item.Id')">Cancel</button>
+                                    </form>
+                                </span>
+                            </li>
+                }
+                    </ul>
+                    <form method="post" asp-action="AddActionTaken" class="mt-2">
+                        <div class="input-group">
+                            <input type="text" name="newActionTaken" class="form-control" placeholder="Add new Action Taken" />
+                            <button type="submit" class="btn btn-warning">Add</button>
+        </div>
+    </form>
+                </div>
+        </div>
+            <div class="card mb-3">
+                <div class="card-header bg-info text-dark">Messages</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @foreach (var item in Model.Messages) {
+                            <li class="dropdown-list-item">
+                                <span id="message-display-@item.Id" class="dropdown-list-item" style="flex:1;">
+                                    <span class="dropdown-list-label">@item.Name</span>
+                                    <span class="dropdown-list-actions">
+                                        <button type="button" class="btn btn-sm btn-success" onclick="enableEdit('message', '@item.Id')">Edit</button>
+                                        <form method="post" asp-action="DeleteMessage" class="d-inline">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    </span>
+                                </span>
+                                <span id="message-edit-@item.Id" class="dropdown-list-item" style="display:none; flex:1;">
+                                    <form method="post" asp-action="EditMessage" class="d-inline dropdown-list-actions" style="flex:1;">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <input type="text" name="newMessage" value="@item.Name" class="form-control d-inline w-auto me-2" style="width:150px; display:inline-block;" />
+                                        <button type="submit" class="btn btn-sm btn-primary me-1">Save</button>
+                                        <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('message', '@item.Id')">Cancel</button>
+                                    </form>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                    <form method="post" asp-action="AddMessage" class="mt-2">
+                        <div class="input-group">
+                            <input type="text" name="newMessage" class="form-control" placeholder="Add new Message" />
+                            <button type="submit" class="btn btn-info">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white">Saccos (SystemConfiguration)</div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        @foreach (var countyGroup in Model.Saccos.GroupBy(s => s.County).OrderBy(g => g.Key)) {
+                            <li class="fw-bold mt-2">@countyGroup.Key</li>
+                            <ul class="list-unstyled ms-3">
+                                @foreach (var sacco in countyGroup.OrderBy(s => s.InstitutionName)) {
+                                    <li class="dropdown-list-item">
+                                        <span id="sacco-display-@sacco.Id" class="dropdown-list-item" style="flex:1;">
+                                            <span class="dropdown-list-label">@sacco.InstitutionName</span>
+                                            <span class="dropdown-list-actions">
+                                                <button type="button" class="btn btn-sm btn-success" onclick="enableEdit('sacco', '@sacco.Id')">Edit</button>
+                                                <form method="post" asp-action="DeleteSacco" class="d-inline">
+                                                    <input type="hidden" name="id" value="@sacco.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                </form>
+                                            </span>
+                                        </span>
+                                        <span id="sacco-edit-@sacco.Id" class="dropdown-list-item" style="display:none; flex:1;">
+                                            <form method="post" asp-action="EditSacco" class="d-inline dropdown-list-actions" style="flex:1;">
+                                                <input type="hidden" name="id" value="@sacco.Id" />
+                                                <input type="text" name="institutionName" value="@sacco.InstitutionName" class="form-control d-inline w-auto me-2" style="width:150px; display:inline-block;" />
+                                                <input type="text" name="county" value="@sacco.County" class="form-control d-inline w-auto me-2" style="width:120px; display:inline-block;" />
+                                                <button type="submit" class="btn btn-sm btn-primary me-1">Save</button>
+                                                <button type="button" class="btn btn-sm btn-secondary" onclick="cancelEdit('sacco', '@sacco.Id')">Cancel</button>
+                                            </form>
+                                        </span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </ul>
+                    <form method="post" asp-action="AddSacco" class="mt-2">
+                        <div class="input-group">
+                            <input type="text" name="institutionName" class="form-control" placeholder="Add new Sacco Name" required />
+                            <input type="text" name="county" class="form-control" placeholder="County" required />
+                            <button type="submit" class="btn btn-success">Add</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

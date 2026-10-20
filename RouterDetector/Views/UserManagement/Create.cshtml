@@ -1,0 +1,59 @@
+@{
+    ViewBag.Title = "Add New User";
+    var saccos = ViewBag.Saccos as List<RouterDetector.Models.SystemConfiguration>;
+    var staffPositions = ViewBag.StaffPositions as List<string>;
+}
+<div class="container mt-4">
+    <h2>Add New User</h2>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" required 
+                   placeholder="Enter username for login" value="" />
+            <small class="form-text text-muted">This username will be used for login</small>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" required 
+                   placeholder="Enter email address" value="" />
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" required 
+                   placeholder="Enter password" value="" />
+        </div>
+        <div class="mb-3">
+            <label for="staffPosition" class="form-label">Staff Position</label>
+            <select class="form-select" id="staffPosition" name="staffPosition" required>
+                <option value="">-- Select Position --</option>
+                @if (staffPositions != null)
+                {
+                    foreach (var pos in staffPositions)
+                    {
+                        <option value="@pos">@pos</option>
+                    }
+                }
+            </select>
+            <small class="form-text text-muted">Admin: Full access, User: Limited access</small>
+        </div>
+        <div class="mb-3">
+            <label for="saccoId" class="form-label">Sacco</label>
+            <select class="form-select" id="saccoId" name="saccoId" required>
+                <option value="">-- Select Sacco --</option>
+                @if (saccos != null)
+                {
+                    foreach (var sacco in saccos)
+                    {
+                        <option value="@sacco.Id">@sacco.InstitutionName (@sacco.County)</option>
+                    }
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-success">Add User</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div> 

@@ -22,6 +22,47 @@ namespace RouterDetector.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("RouterDetector.Models.ActionTaken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ActionTakens", (string)null);
+                });
+
+            modelBuilder.Entity("RouterDetector.Models.AuditTrail", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AuditTrails", (string)null);
+                });
+
             modelBuilder.Entity("RouterDetector.Models.EventLog", b =>
                 {
                     b.Property<int>("Id")
@@ -110,7 +151,75 @@ namespace RouterDetector.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("EventLogs");
+                    b.ToTable("EventLogs", (string)null);
+                });
+
+            modelBuilder.Entity("RouterDetector.Models.EventType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EventTypes", (string)null);
+                });
+
+            modelBuilder.Entity("RouterDetector.Models.MessageType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MessageTypes", (string)null);
+                });
+
+            modelBuilder.Entity("RouterDetector.Models.RuleType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RuleTypes", (string)null);
+                });
+
+            modelBuilder.Entity("RouterDetector.Models.Severity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Severities", (string)null);
                 });
 
             modelBuilder.Entity("RouterDetector.Models.SystemConfiguration", b =>
@@ -120,6 +229,10 @@ namespace RouterDetector.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("County")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("InstitutionName")
                         .IsRequired()
@@ -131,7 +244,16 @@ namespace RouterDetector.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("SystemConfiguration");
+                    b.ToTable("SystemConfiguration", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            County = "Default County",
+                            InstitutionName = "Default Sacco",
+                            StaffPosition = "Default"
+                        });
                 });
 
             modelBuilder.Entity("RouterDetector.Models.User", b =>
@@ -146,7 +268,17 @@ namespace RouterDetector.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SaccoId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StaffPosition")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -156,7 +288,32 @@ namespace RouterDetector.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("SaccoId");
+
+                    b.ToTable("CyberAgents", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "admin@example.com",
+                            IsActive = true,
+                            PasswordHash = "O2Esdae1BIpDX7bsgeUv+S1teVqLWpwXBw9qY8l6U7I=",
+                            SaccoId = 1,
+                            StaffPosition = "Admin",
+                            Username = "Admin"
+                        });
+                });
+
+            modelBuilder.Entity("RouterDetector.Models.User", b =>
+                {
+                    b.HasOne("RouterDetector.Models.SystemConfiguration", "Sacco")
+                        .WithMany()
+                        .HasForeignKey("SaccoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sacco");
                 });
 #pragma warning restore 612, 618
         }

@@ -6,7 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ✅ Configure EF Core with the correct connection string key from appsettings.json
 builder.Services.AddDbContext<RouterDetectorContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default-Connection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default-Connection"), sqlOptions =>
+    {
+        sqlOptions.CommandTimeout(300); // Increase timeout to 300 seconds (5 minutes) for large table operations
+        sqlOptions.EnableRetryOnFailure(maxRetryCount: 5);
+    }));
 
 // ✅ Add MVC controller and view services
 builder.Services.AddControllersWithViews();

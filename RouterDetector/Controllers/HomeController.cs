@@ -21,7 +21,8 @@ namespace RouterDetector.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            // Redirect to Dashboard instead of showing a home page
+            return RedirectToAction("Dashboard");
         }
 
         public IActionResult Privacy()
@@ -29,36 +30,51 @@ namespace RouterDetector.Controllers
             return View();
         }
 
-        public async Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard(int? saccoId = null)
         {
-            // Get filter parameters
-            DateTime? startDate = Request.Query.ContainsKey("startDate") ? DateTime.Parse(Request.Query["startDate"]) : DateTime.Now.AddMonths(-6);
-            DateTime? endDate = Request.Query.ContainsKey("endDate") ? DateTime.Parse(Request.Query["endDate"]) : DateTime.Now;
-            var selectedEventType = Request.Query.ContainsKey("eventType") ? Request.Query["eventType"].ToString() : null;
-            var selectedSeverity = Request.Query.ContainsKey("severity") ? Request.Query["severity"].ToString() : null;
-            var selectedRuleType = Request.Query.ContainsKey("ruleType") ? Request.Query["ruleType"].ToString() : null;
-            var selectedActionTaken = Request.Query.ContainsKey("actionTaken") ? Request.Query["actionTaken"].ToString() : null;
+            var staffPosition = User.Claims.FirstOrDefault(c => c.Type == "StaffPosition")?.Value;
+            var userSaccoIdClaim = User.Claims.FirstOrDefault(c => c.Type == "SaccoId")?.Value;
+            int? userSaccoId = null;
+            if (int.TryParse(userSaccoIdClaim, out var parsedSaccoId))
+                userSaccoId = parsedSaccoId;
+            bool isAdmin = staffPosition != null && staffPosition.ToLower() == "admin";
 
-            // Build query with filters
-            var query = _context.EventLogs.AsQueryable();
-            
-            if (startDate.HasValue)
-                query = query.Where(e => e.Timestamp >= startDate.Value);
-            
-            if (endDate.HasValue)
-                query = query.Where(e => e.Timestamp <= endDate.Value);
-            
-            if (!string.IsNullOrEmpty(selectedEventType))
-                query = query.Where(e => e.EventType == selectedEventType);
-            
-            if (!string.IsNullOrEmpty(selectedSeverity))
-                query = query.Where(e => e.Severity == selectedSeverity);
-            
-            if (!string.IsNullOrEmpty(selectedRuleType))
-                query = query.Where(e => e.RuleType == selectedRuleType);
-            
-            if (!string.IsNullOrEmpty(selectedActionTaken))
-                query = query.Where(e => e.ActionTaken == selectedActionTaken);
+            // Get Saccos for sidebar with AsNoTracking for better performance
+            List<SystemConfiguration> saccos;
+            if (isAdmin)
+                saccos = await _context.SystemConfiguration.AsNoTracking().OrderBy(s => s.County).ThenBy(s => s.InstitutionName).ToListAsync();
+            else
+                saccos = await _context.SystemConfiguration.AsNoTracking().Where(s => s.Id == userSaccoId).ToListAsync();
+
+            ViewBag.Saccos = saccos;
+            ViewBag.SelectedSaccoId = saccoId ?? (isAdmin ? null : userSaccoId);
+            ViewBag.IsAdmin = isAdmin;
+
+            // Get user's Sacco information for display with AsNoTracking
+            if (!isAdmin && userSaccoId.HasValue)
+            {
+                var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                ViewBag.UserSacco = userSacco;
+            }
+
+            // Filter events by Sacco with AsNoTracking for better performance
+            var query = _context.EventLogs.AsNoTracking().AsQueryable();
+            if (isAdmin && saccoId.HasValue)
+            {
+                var selectedSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == saccoId.Value);
+                if (selectedSacco != null)
+                    query = query.Where(e => e.Institution == selectedSacco.InstitutionName);
+            }
+            else if (!isAdmin && userSaccoId.HasValue)
+            {
+                var userSacco = await _context.SystemConfiguration.AsNoTracking().FirstOrDefaultAsync(sc => sc.Id == userSaccoId.Value);
+                if (userSacco != null)
+                    query = query.Where(e => e.Institution == userSacco.InstitutionName);
+            }
+
+            // Only load last 30 days of events for better performance
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+            query = query.Where(e => e.Timestamp >= thirtyDaysAgo);
 
             var allEvents = await query.ToListAsync();
 
@@ -92,16 +108,15 @@ namespace RouterDetector.Controllers
                 e.Message != null && e.Message.Contains("Web application attack", StringComparison.OrdinalIgnoreCase)).ToList();
 
             // Analytics calculations
-            var eventsByType = allEvents.GroupBy(e => e.EventType ?? "Unknown")
+          
+            
+            var eventsBySeverity = allEvents.GroupBy(e => string.IsNullOrEmpty(e.Severity) ? "Unknown" : e.Severity)
                 .ToDictionary(g => g.Key, g => g.Count());
             
-            var eventsBySeverity = allEvents.GroupBy(e => e.Severity ?? "Unknown")
+            var eventsByRuleType = allEvents.GroupBy(e => string.IsNullOrEmpty(e.RuleType) ? "Unknown" : e.RuleType)
                 .ToDictionary(g => g.Key, g => g.Count());
             
-            var eventsByRuleType = allEvents.GroupBy(e => e.RuleType ?? "Unknown")
-                .ToDictionary(g => g.Key, g => g.Count());
-            
-            var eventsByActionTaken = allEvents.GroupBy(e => e.ActionTaken ?? "Unknown")
+            var eventsByActionTaken = allEvents.GroupBy(e => string.IsNullOrEmpty(e.ActionTaken) ? "Unknown" : e.ActionTaken)
                 .ToDictionary(g => g.Key, g => g.Count());
 
             // Time-based analytics
@@ -118,9 +133,45 @@ namespace RouterDetector.Controllers
                 .Take(30)
                 .ToDictionary(g => g.Key, g => g.Count());
             
-            var eventsByHour = allEvents.GroupBy(e => e.Timestamp.Hour.ToString("00"))
-                .OrderBy(g => g.Key)
+           
+
+            // Ensure all 24 hours are present in EventsByHour
+            var allHours = Enumerable.Range(0, 24).Select(h => h.ToString("D2")).ToList();
+            var eventsByHourRaw = allEvents.GroupBy(e => e.Timestamp.Hour.ToString("D2"))
                 .ToDictionary(g => g.Key, g => g.Count());
+            var eventsByHour = new Dictionary<string, int>();
+            foreach (var hour in allHours)
+            {
+                eventsByHour[hour] = eventsByHourRaw.ContainsKey(hour) ? eventsByHourRaw[hour] : 0;
+            }
+
+            // Ensure all event types present in the database are included in EventsByType
+            var allEventTypes = await _context.EventLogs.AsNoTracking()
+                .Where(e => e.Timestamp >= thirtyDaysAgo)
+                .Select(e => e.EventType)
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Distinct()
+                .ToListAsync();
+            var eventsByTypeRaw = allEvents.GroupBy(e => e.EventType ?? "Unknown").ToDictionary(g => g.Key, g => g.Count());
+            var eventsByType = new Dictionary<string, int>();
+            foreach (var eventType in allEventTypes)
+            {
+                eventsByType[eventType] = eventsByTypeRaw.ContainsKey(eventType) ? eventsByTypeRaw[eventType] : 0;
+            }
+
+            // Bar chart: Event type counts per month
+            var eventTypes = allEvents.Select(e => e.EventType).Where(x => !string.IsNullOrEmpty(x)).Distinct().OrderBy(x => x).ToList();
+            var months = allEvents.GroupBy(e => e.Timestamp.ToString("yyyy-MM")).OrderBy(g => g.Key).Select(g => g.Key).ToList();
+            var eventsByTypePerMonth = new Dictionary<string, List<int>>();
+            foreach (var eventType in eventTypes)
+            {
+                var counts = new List<int>();
+                foreach (var month in months)
+                {
+                    counts.Add(allEvents.Count(e => (e.EventType == eventType) && e.Timestamp.ToString("yyyy-MM") == month));
+                }
+                eventsByTypePerMonth[eventType] = counts;
+            }
 
             // Source/Destination analytics
             var topSourceIPs = allEvents.Where(e => !string.IsNullOrEmpty(e.SrcIp))
@@ -128,13 +179,11 @@ namespace RouterDetector.Controllers
                 .OrderByDescending(g => g.Count())
                 .Take(10)
                 .ToDictionary(g => g.Key!, g => g.Count());
-            
             var topDestinationIPs = allEvents.Where(e => !string.IsNullOrEmpty(e.DstIp))
                 .GroupBy(e => e.DstIp)
                 .OrderByDescending(g => g.Count())
                 .Take(10)
                 .ToDictionary(g => g.Key!, g => g.Count());
-            
             var topPorts = allEvents.Where(e => e.DstPort.HasValue)
                 .GroupBy(e => e.DstPort.ToString())
                 .OrderByDescending(g => g.Count())
@@ -195,7 +244,7 @@ namespace RouterDetector.Controllers
                 TopDestinationIPs = topDestinationIPs,
                 TopPorts = topPorts,
 
-                // Specific Threat Lists
+                // Specific Threat Lists (for cards)
                 MalwareEvents = malwareEvents,
                 PhishingEvents = phishingEvents,
                 SuspiciousEmailEvents = suspiciousEmailEvents,
@@ -206,23 +255,35 @@ namespace RouterDetector.Controllers
 
                 // Trends
                 MonthlyTrends = monthlyTrends,
+                EventsByTypePerMonth = eventsByTypePerMonth,
+                Months = months,
 
                 // Filter Options
-                StartDate = startDate,
-                EndDate = endDate,
-                SelectedEventType = selectedEventType,
-                SelectedSeverity = selectedSeverity,
-                SelectedRuleType = selectedRuleType,
-                SelectedActionTaken = selectedActionTaken
+                StartDate = null, // No start date filter in this view
+                EndDate = null,   // No end date filter in this view
+                SelectedEventType = null,
+                SelectedSeverity = null,
+                SelectedRuleType = null,
+                SelectedActionTaken = null,
+                SelectedSaccoId = saccoId ?? (isAdmin ? null : userSaccoId),
+                Saccos = saccos
             };
 
+            ViewBag.EventTypes = await _context.EventTypes.AsNoTracking().OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
+            ViewBag.RuleTypes = await _context.RuleTypes.AsNoTracking().OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
+            ViewBag.Severities = await _context.Severities.AsNoTracking().OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
+            ViewBag.ActionTakens = await _context.ActionTakens.AsNoTracking().OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
+            ViewBag.Messages = await _context.MessageTypes.AsNoTracking().OrderBy(x => x.Name).Select(x => x.Name).ToListAsync();
             return View(viewModel);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAnalyticsData()
         {
-            var allEvents = await _context.EventLogs.ToListAsync();
+            var thirtyDaysAgo = DateTime.Now.AddDays(-30);
+            var allEvents = await _context.EventLogs.AsNoTracking()
+                .Where(e => e.Timestamp >= thirtyDaysAgo)
+                .ToListAsync();
 
             var analyticsData = new
             {

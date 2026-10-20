@@ -1,0 +1,60 @@
+@model RouterDetector.Models.User
+@{
+    ViewData["Title"] = "Edit User";
+    var saccos = ViewBag.Saccos as List<RouterDetector.Models.SystemConfiguration>;
+    var staffPositions = new List<string> { "Admin", "User" };
+}
+<div class="container mt-4">
+    <h2>Edit User - @Model.Username</h2>
+    <form asp-action="Edit" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="@Model.Email" required />
+        </div>
+        <div class="mb-3">
+            <label for="staffPosition" class="form-label">Staff Position</label>
+            <select class="form-select" id="staffPosition" name="staffPosition" required>
+                @foreach (var pos in staffPositions)
+                {
+                    if (Model.StaffPosition == pos)
+                    {
+                        <option value="@pos" selected>@pos</option>
+                    }
+                    else
+                    {
+                        <option value="@pos">@pos</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="saccoId" class="form-label">Sacco</label>
+            <select class="form-select" id="saccoId" name="saccoId" required>
+                @if (saccos != null)
+                {
+                    foreach (var sacco in saccos)
+                    {
+                        if (Model.SaccoId == sacco.Id)
+                        {
+                            <option value="@sacco.Id" selected>@sacco.InstitutionName (@sacco.County)</option>
+                        }
+                        else
+                        {
+                            <option value="@sacco.Id">@sacco.InstitutionName (@sacco.County)</option>
+                        }
+                    }
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Active</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="isActive" name="isActive" value="true" @(Model.IsActive ? "checked" : "") />
+                <label class="form-check-label" for="isActive">Active</label>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div> 

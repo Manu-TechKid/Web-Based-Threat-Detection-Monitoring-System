@@ -41,9 +41,82 @@
                     <input type="text" class="form-control" id="username" name="username" required autofocus />
                 </div>
                 <div class="form-group mb-3">
+                    <label for="staffPosition">Staff Position</label>
+                    <input type="text" class="form-control" id="staffPosition" name="staffPosition" required />
+                </div>
+                <div class="form-group mb-3">
                     <label for="password">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required />
                 </div>
+                <div class="form-group mb-3">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
+                </div>
+                <div class="mb-3">
+                    <label for="sacco" class="form-label">Sacco</label>
+                    <select class="form-control" id="sacco" name="saccoId">
+                        <option value="">-- Select Sacco --</option>
+                        @foreach (var sacco in ViewBag.Saccos)
+                        {
+                            <option value="@sacco.Id">@sacco.InstitutionName</option>
+                        }
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="newSacco" class="form-label">Or Enter New Sacco Name</label>
+                    <input type="text" class="form-control" id="newSacco" name="newSacco" maxlength="100" />
+                </div>
+                <div class="mb-3" id="countyField" style="display:none;">
+                    <label for="newCounty" class="form-label">County (required for new Sacco)</label>
+                    <input list="countyList" type="text" class="form-control" id="newCounty" name="newCounty" maxlength="100" />
+                    <datalist id="countyList">
+                        @if (ViewBag.Counties != null)
+                        {
+                            foreach (var county in ViewBag.Counties)
+                            {
+                                <option value="@county"></option>
+                            }
+                        }
+                    </datalist>
+                </div>
+                <script>
+                    // Ensure only one of the two fields is filled, and show county field if newSacco is filled
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var saccoSelect = document.getElementById('sacco');
+                        var newSaccoInput = document.getElementById('newSacco');
+                        var countyField = document.getElementById('countyField');
+                        var form = document.querySelector('form');
+                        function toggleCountyField() {
+                            if (newSaccoInput.value.trim()) {
+                                countyField.style.display = '';
+                                document.getElementById('newCounty').required = true;
+                            } else {
+                                countyField.style.display = 'none';
+                                document.getElementById('newCounty').required = false;
+                            }
+                        }
+                        newSaccoInput.addEventListener('input', toggleCountyField);
+                        toggleCountyField();
+                        form.addEventListener('submit', function(e) {
+                            if ((!saccoSelect.value && !newSaccoInput.value.trim()) || (saccoSelect.value && newSaccoInput.value.trim())) {
+                                e.preventDefault();
+                                alert('Please select a Sacco or enter a new Sacco name, but not both.');
+                                return;
+                            }
+                            if (newSaccoInput.value.trim() && !document.getElementById('newCounty').value.trim()) {
+                                e.preventDefault();
+                                alert('County is required when adding a new Sacco.');
+                                return;
+                            }
+                            var password = document.getElementById('password').value;
+                            var confirmPassword = document.getElementById('confirmPassword').value;
+                            if (password !== confirmPassword) {
+                                e.preventDefault();
+                                alert('Passwords do not match.');
+                            }
+                        });
+                    });
+                </script>
                 <button type="submit" class="btn btn-primary w-100">Register</button>
             </form>
             <div class="text-danger mt-3">

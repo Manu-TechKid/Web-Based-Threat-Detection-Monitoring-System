@@ -76,7 +76,8 @@ namespace RouterDetector.CaptureConsole.ConsoleUI
                     : institutionName,
                 StaffPosition = string.IsNullOrWhiteSpace(staffPosition)
                     ? currentConfig.StaffPosition
-                    : staffPosition
+                    : staffPosition,
+                County = currentConfig.County ?? "Default County"
             };
 
             await _configService.UpdateAsync(updatedConfig);
